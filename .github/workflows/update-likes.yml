@@ -1,9 +1,9 @@
 name: Update like count
 
 # GitHub's schedule is unreliable on free repos: "every 30 minutes" ran 5 times in 27 hours (2026-10-01), so the board
-# sat at 15 likes while the game page had 19. Now each run stays alive for ~5 h 50 min and checks every 5 minutes, and
+# sat at 15 likes while the game page had 19. Now each run stays alive for ~5 h 50 min and checks every minute, and
 # the next scheduled run waits in the queue behind it (concurrency) - the count stays live even when the scheduler is
-# hours late.
+# hours late. The game reads the live count first anyway; this file is its fallback.
 on:
   schedule:
     - cron: "*/30 * * * *"   # only starts a new loop when the last one has ended
@@ -25,18 +25,18 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Check the like count every 5 minutes for ~5 h 45 min
+      - name: Check the like count every minute for ~5 h 45 min
         run: |
           git config user.name "like-counter"
           git config user.email "like-counter@users.noreply.github.com"
           end=$(( $(date +%s) + 345 * 60 ))
           while [ "$(date +%s)" -lt "$end" ]; do
-            python update_likes.py || echo "fetch failed, trying again in 5 minutes"
+            python update_likes.py || echo "fetch failed, trying again in a minute"
             git add likes.json
             if ! git diff --cached --quiet; then
               git commit -m "likes: $(cat likes.json)"
               git pull --rebase --quiet || true
               git push || echo "push failed, trying again next round"
             fi
-            sleep 300
+            sleep 60
           done
