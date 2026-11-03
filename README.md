@@ -1,9 +1,17 @@
-# +1 Tank Evolution like counter
+# +1 games like counter
 
-Every 30 minutes a GitHub Action asks Roblox for the game's like count and saves it in `likes.json`.
-The game's lobby board (the like goal) reads that file, because a Roblox server can't call roblox.com itself.
+A GitHub Action asks Roblox for each game's like count about once a minute and saves it in that game's file:
 
-It uses no tokens, no secrets and no Gist. The workflow commits `likes.json` into this repo with GitHub's built-in permission.
+| Game | Universe | File |
+| --- | --- | --- |
+| +1 Tank Evolution | 10764830764 | `likes.json` |
+| +1 Sandworm Evolution | 10774102472 | `sandworm_likes.json` (added 2026-11-03) |
+
+Each game's lobby board (the like goal) reads its own file, because a Roblox server can't call roblox.com itself.
+To add a game: put its universe id and a new file name in `GAMES` in `update_likes.py` and add the name to the
+`for f in ...` line in the workflow. The next run creates the file.
+
+It uses no tokens, no secrets and no Gist. The workflow commits the files into this repo with GitHub's built-in permission.
 
 ## Setup (one time, about 3 minutes)
 
