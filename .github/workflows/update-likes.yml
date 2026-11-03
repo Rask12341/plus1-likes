@@ -10,7 +10,7 @@ on:
   workflow_dispatch:          # "Run workflow" button: starts a loop now
 
 permissions:
-  contents: write             # lets the built-in token commit likes.json - no personal token needed
+  contents: write             # lets the built-in token commit the like files - no personal token needed
 
 concurrency:
   group: like-counter
@@ -32,9 +32,11 @@ jobs:
           end=$(( $(date +%s) + 345 * 60 ))
           while [ "$(date +%s)" -lt "$end" ]; do
             python update_likes.py || echo "fetch failed, trying again in a minute"
-            git add likes.json
+            for f in likes.json sandworm_likes.json; do   # one file per game (update_likes.py GAMES)
+              if [ -f "$f" ]; then git add "$f"; fi
+            done
             if ! git diff --cached --quiet; then
-              git commit -m "likes: $(cat likes.json)"
+              git commit -m "likes: tank $(cat likes.json 2>/dev/null) sandworm $(cat sandworm_likes.json 2>/dev/null)"
               git pull --rebase --quiet || true
               git push || echo "push failed, trying again next round"
             fi
